@@ -20,7 +20,6 @@
 package org.elasticsearch.plugin.river.wikipedia;
 
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.plugins.AbstractPlugin;
 import org.elasticsearch.river.RiversModule;
 import org.elasticsearch.river.wikipedia.WikipediaRiverModule;
@@ -44,10 +43,7 @@ public class WikipediaRiverPlugin extends AbstractPlugin {
         return "River Wikipedia Plugin";
     }
 
-    @Override
-    public void processModule(Module module) {
-        if (module instanceof RiversModule) {
-            ((RiversModule) module).registerRiver("wikipedia", WikipediaRiverModule.class);
-        }
+    public void onModule(RiversModule module) {
+        module.registerRiver("wikipedia", WikipediaRiverModule.class);
     }
 }
