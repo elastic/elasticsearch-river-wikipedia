@@ -105,7 +105,7 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
     @Override
     public void start() {
-        logger.info("starting twitter stream");
+        logger.info("starting wikipedia stream");
         try {
             client.admin().indices().prepareCreate(indexName).execute().actionGet();
         } catch (Exception e) {
