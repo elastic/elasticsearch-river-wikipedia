@@ -43,6 +43,13 @@ The index name defaults to the river name, and the type defaults to page. Both c
 	    }
 	}
 
+By default, the river will start with each cluster restart and try to reindex the entire wikipedia. It can be disabled by the close_on_completion setting. With this setting set to true, river will close itself upon successful completion:
+
+	{
+	    "type" : "wikipedia",
+        "close_on_completion": true
+    }
+
 License
 -------
 

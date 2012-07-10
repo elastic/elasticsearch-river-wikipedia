@@ -21,6 +21,7 @@ package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.ExceptionsHelper;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
@@ -65,6 +66,8 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
     private final Semaphore processingSemaphore;
 
+    private final boolean closeOnCompletion;
+
 
     private volatile Thread thread;
 
@@ -101,6 +104,7 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
             threshold = 10;
         }
         processingSemaphore = new Semaphore(threshold);
+        closeOnCompletion = XContentMapValues.nodeBooleanValue(settings.settings().get("close_on_completion"), false);
     }
 
     @Override
@@ -151,6 +155,25 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
         public void run() {
             try {
                 parser.parse();
+                logger.info("done processing stream");
+                if (closeOnCompletion) {
+                    logger.info("deleting river");
+                    try {
+                        client.admin().indices().prepareDeleteMapping("_river").setType(riverName.name()).execute(
+                                new ActionListener<DeleteMappingResponse>() {
+                                    @Override
+                                    public void onResponse(DeleteMappingResponse deleteMappingResponse) {
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable e) {
+                                        logger.error("failed to delete river", e);
+                                    }
+                                });
+                    } catch (Exception e) {
+                        logger.error("failed to delete river", e);
+                    }
+                }
             } catch (Exception e) {
                 if (closed) {
                     return;
