@@ -21,6 +21,7 @@ package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.ExceptionsHelper;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
@@ -44,7 +45,7 @@ import org.elasticsearch.river.wikipedia.support.WikiXMLParserFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Semaphore;
 
 /**
  *
@@ -63,10 +64,10 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
     private final int bulkSize;
 
-    private final int dropThreshold;
+    private final Semaphore processingSemaphore;
 
+    private final boolean closeOnCompletion;
 
-    private final AtomicInteger onGoingBulks = new AtomicInteger();
 
     private volatile Thread thread;
 
@@ -89,18 +90,21 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
         logger.info("creating wikipedia stream river for [{}]", url);
         this.url = new URL(url);
 
+        int threshold;
         if (settings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) settings.settings().get("index");
             indexName = XContentMapValues.nodeStringValue(indexSettings.get("index"), riverName.name());
             typeName = XContentMapValues.nodeStringValue(indexSettings.get("type"), "status");
-            this.bulkSize = XContentMapValues.nodeIntegerValue(settings.settings().get("bulk_size"), 100);
-            this.dropThreshold = XContentMapValues.nodeIntegerValue(settings.settings().get("drop_threshold"), 10);
+            this.bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get("bulk_size"), 100);
+            threshold = XContentMapValues.nodeIntegerValue(indexSettings.get("threshold"), 10);
         } else {
             indexName = riverName.name();
             typeName = "page";
             bulkSize = 100;
-            dropThreshold = 10;
+            threshold = 10;
         }
+        processingSemaphore = new Semaphore(threshold);
+        closeOnCompletion = XContentMapValues.nodeBooleanValue(settings.settings().get("close_on_completion"), false);
     }
 
     @Override
@@ -151,6 +155,25 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
         public void run() {
             try {
                 parser.parse();
+                logger.info("done processing stream");
+                if (closeOnCompletion) {
+                    logger.info("deleting river");
+                    try {
+                        client.admin().indices().prepareDeleteMapping("_river").setType(riverName.name()).execute(
+                                new ActionListener<DeleteMappingResponse>() {
+                                    @Override
+                                    public void onResponse(DeleteMappingResponse deleteMappingResponse) {
+                                    }
+
+                                    @Override
+                                    public void onFailure(Throwable e) {
+                                        logger.error("failed to delete river", e);
+                                    }
+                                });
+                    } catch (Exception e) {
+                        logger.error("failed to delete river", e);
+                    }
+                }
             } catch (Exception e) {
                 if (closed) {
                     return;
@@ -195,39 +218,42 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 builder.endObject();
                 // For now, we index (and not create) since we need to keep track of what we indexed...
                 currentRequest.add(Requests.indexRequest(indexName).type(typeName).id(page.getID()).create(false).source(builder));
-                processBulkIfNeeded();
+                if (currentRequest.numberOfActions() >= bulkSize) {
+                    processBulk();
+                }
             } catch (Exception e) {
                 logger.warn("failed to construct index request", e);
             }
+            if (currentRequest.numberOfActions() > 0) {
+                processBulk();
+            }
         }
 
-        private void processBulkIfNeeded() {
-            if (currentRequest.numberOfActions() >= bulkSize) {
-                // execute the bulk operation
-                int currentOnGoingBulks = onGoingBulks.incrementAndGet();
-                if (currentOnGoingBulks > dropThreshold) {
-                    // TODO, just wait here!, we can slow down the wikipedia parsing
-                    onGoingBulks.decrementAndGet();
-                    logger.warn("dropping bulk, [{}] crossed threshold [{}]", onGoingBulks, dropThreshold);
-                } else {
-                    try {
-                        currentRequest.execute(new ActionListener<BulkResponse>() {
-                            @Override
-                            public void onResponse(BulkResponse bulkResponse) {
-                                onGoingBulks.decrementAndGet();
-                            }
-
-                            @Override
-                            public void onFailure(Throwable e) {
-                                logger.warn("failed to execute bulk");
-                            }
-                        });
-                    } catch (Exception e) {
-                        logger.warn("failed to process bulk", e);
-                    }
-                }
-                currentRequest = client.prepareBulk();
+        private void processBulk() {
+            try {
+                processingSemaphore.acquire();
+            } catch (InterruptedException ex) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
             }
+            try {
+                currentRequest.execute(new ActionListener<BulkResponse>() {
+                    @Override
+                    public void onResponse(BulkResponse bulkResponse) {
+                        processingSemaphore.release();
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e) {
+                        processingSemaphore.release();
+                        logger.warn("failed to execute bulk");
+                    }
+                });
+            } catch (Exception e) {
+                logger.warn("failed to process bulk", e);
+                processingSemaphore.release();
+            }
+            currentRequest = client.prepareBulk();
         }
     }
 
