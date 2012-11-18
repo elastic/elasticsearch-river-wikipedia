@@ -37,7 +37,7 @@ The index name defaults to the river name, and the type defaults to page. Both c
 	{
 	    "type" : "wikipedia",
 	    "index" : {
-	        "name" : "my_index",
+	        "index" : "my_index",
 	        "type" : "my_type",
 	        "bulk_size" : 100
 	    }
