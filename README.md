@@ -5,15 +5,32 @@ The Wikipedia River plugin allows index wikipedia.
 
 In order to install the plugin, simply run: `bin/plugin -install elasticsearch/elasticsearch-river-wikipedia/1.1.0`.
 
-    ---------------------------------------
-    | Wikipedia Plugin | ElasticSearch    |
-    ---------------------------------------
-    | master           | 0.19 -> master   |
-    ---------------------------------------
-    | 1.1.0            | 0.19 -> master   |
-    ---------------------------------------
-    | 1.0.0            | 0.18             |
-    ---------------------------------------
+<table>
+	<thead>
+		<tr>
+			<td>Wikipedia River Plugin</td>
+			<td>ElasticSearch</td>
+			<td>Release date</td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>1.2.0-SNAPSHOT (master)</td>
+			<td>0.90.3 -> master</td>
+			<td>19/08/2013</td>
+		</tr>
+		<tr>
+			<td>1.1.0</td>
+			<td>0.19 -> 0.90.2</td>
+			<td>07/02/2012</td>
+		</tr>
+        <tr>
+			<td>1.0.0</td>
+			<td>0.18</td>
+			<td>05/12/2011</td>
+		</tr>
+	</tbody>
+</table>
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
@@ -48,7 +65,7 @@ License
 
     This software is licensed under the Apache 2 license, quoted below.
 
-    Copyright 2009-2012 Shay Banon and ElasticSearch <http://www.elasticsearch.org>
+    Copyright 2009-2013 Shay Banon and ElasticSearch <http://www.elasticsearch.org>
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not
     use this file except in compliance with the License. You may obtain a copy of

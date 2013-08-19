@@ -19,7 +19,7 @@
 
 package org.elasticsearch.river.wikipedia.support;
 
-import org.elasticsearch.common.compress.bzip2.CBZip2InputStream;
+import org.elasticsearch.river.wikipedia.bzip2.CBZip2InputStream;
 import org.xml.sax.InputSource;
 
 import java.io.BufferedReader;
