@@ -49,12 +49,12 @@ The default download is the latest [wikipedia dump](http://download.wikimedia.or
 	    }
 	}
 
-The index name defaults to the river name, and the type defaults to page. Both can be changed in the index section:
+The index name defaults to the river name, and the type defaults to `page`. Both can be changed in the index section:
 
 	{
 	    "type" : "wikipedia",
 	    "index" : {
-	        "name" : "my_index",
+	        "index" : "my_index",
 	        "type" : "my_type",
 	        "bulk_size" : 100
 	    }
