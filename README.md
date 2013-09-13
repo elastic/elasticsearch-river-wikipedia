@@ -70,7 +70,7 @@ The index name defaults to the river name, and the type defaults to `page`. Both
 }
 ```
 
-By default, `bulk` size is `100`. A bulk is flushed every `5s`. Number of concurrent requests allowed to be executed is 1.
+Since 1.3.0, by default, `bulk` size is `100`. A bulk is flushed every `5s`. Number of concurrent requests allowed to be executed is 1.
 You can modify those settings within index section:
 
 ```javascript
