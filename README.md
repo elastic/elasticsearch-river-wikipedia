@@ -65,8 +65,23 @@ The index name defaults to the river name, and the type defaults to `page`. Both
     "type" : "wikipedia",
     "index" : {
         "index" : "my_index",
+        "type" : "my_type"
+    }
+}
+```
+
+By default, `bulk` size is `100`. A bulk is flushed every `5s`. Number of concurrent requests allowed to be executed is 1.
+You can modify those settings within index section:
+
+```javascript
+{
+    "type" : "wikipedia",
+    "index" : {
+        "index" : "my_index",
         "type" : "my_type",
-        "bulk_size" : 100
+        "bulk_size" : 1000,
+        "flush_interval" : "1s",
+        "max_concurrent_bulk" : 3
     }
 }
 ```

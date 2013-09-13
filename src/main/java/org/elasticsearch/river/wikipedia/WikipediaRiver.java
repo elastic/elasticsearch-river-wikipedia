@@ -20,13 +20,15 @@
 package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.ExceptionsHelper;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.block.ClusterBlockException;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.util.concurrent.EsExecutors;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -44,7 +46,6 @@ import org.elasticsearch.river.wikipedia.support.WikiXMLParserFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -63,16 +64,14 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
     private final int bulkSize;
 
-    private final int dropThreshold;
-
-
-    private final AtomicInteger onGoingBulks = new AtomicInteger();
-
     private volatile Thread thread;
 
     private volatile boolean closed = false;
 
-    private volatile BulkRequestBuilder currentRequest;
+    private final TimeValue bulkFlushInterval;
+    private volatile BulkProcessor bulkProcessor;
+    private final int maxConcurrentBulk;
+
 
     @SuppressWarnings({"unchecked"})
     @Inject
@@ -91,15 +90,18 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
         if (settings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) settings.settings().get("index");
-            indexName = XContentMapValues.nodeStringValue(indexSettings.get("index"), riverName.name());
-            typeName = XContentMapValues.nodeStringValue(indexSettings.get("type"), "page");
+            this.indexName = XContentMapValues.nodeStringValue(indexSettings.get("index"), riverName.name());
+            this.typeName = XContentMapValues.nodeStringValue(indexSettings.get("type"), "page");
             this.bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get("bulk_size"), 100);
-            this.dropThreshold = XContentMapValues.nodeIntegerValue(indexSettings.get("drop_threshold"), 10);
+            this.bulkFlushInterval = TimeValue.parseTimeValue(XContentMapValues.nodeStringValue(
+                    indexSettings.get("flush_interval"), "5s"), TimeValue.timeValueSeconds(5));
+            this.maxConcurrentBulk = XContentMapValues.nodeIntegerValue(indexSettings.get("max_concurrent_bulk"), 1);
         } else {
-            indexName = riverName.name();
-            typeName = "page";
-            bulkSize = 100;
-            dropThreshold = 10;
+            this.indexName = riverName.name();
+            this.typeName = "page";
+            this.bulkSize = 100;
+            this.maxConcurrentBulk = 1;
+            this.bulkFlushInterval = TimeValue.timeValueSeconds(5);
         }
     }
 
@@ -119,7 +121,6 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 return;
             }
         }
-        currentRequest = client.prepareBulk();
         WikiXMLParser parser = WikiXMLParserFactory.getSAXParser(url);
         try {
             parser.setPageCallback(new PageCallback());
@@ -127,6 +128,40 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
             logger.error("failed to create parser", e);
             return;
         }
+
+        // Creating bulk processor
+        this.bulkProcessor = BulkProcessor.builder(client, new BulkProcessor.Listener() {
+            @Override
+            public void beforeBulk(long executionId, BulkRequest request) {
+                logger.debug("Going to execute new bulk composed of {} actions", request.numberOfActions());
+            }
+
+            @Override
+            public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
+                logger.debug("Executed bulk composed of {} actions", request.numberOfActions());
+                if (response.hasFailures()) {
+                    logger.warn("There was failures while executing bulk", response.buildFailureMessage());
+                    if (logger.isDebugEnabled()) {
+                        for (BulkItemResponse item : response.getItems()) {
+                            if (item.isFailed()) {
+                                logger.debug("Error for {}/{}/{} for {} operation: {}", item.getIndex(),
+                                        item.getType(), item.getId(), item.getOpType(), item.getFailureMessage());
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+                logger.warn("Error executing bulk", failure);
+            }
+        })
+                .setBulkActions(bulkSize)
+                .setConcurrentRequests(maxConcurrentBulk)
+                .setFlushInterval(bulkFlushInterval)
+                .build();
+
         thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "wikipedia_slurper").newThread(new Parser(parser));
         thread.start();
     }
@@ -137,6 +172,10 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
         closed = true;
         if (thread != null) {
             thread.interrupt();
+        }
+
+        if (this.bulkProcessor != null) {
+            this.bulkProcessor.close();
         }
     }
 
@@ -193,40 +232,10 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 builder.endArray();
 
                 builder.endObject();
-                // For now, we index (and not create) since we need to keep track of what we indexed...
-                currentRequest.add(Requests.indexRequest(indexName).type(typeName).id(page.getID()).create(false).source(builder));
-                processBulkIfNeeded();
+
+                bulkProcessor.add(new IndexRequest(indexName, typeName, page.getID()).source(builder));
             } catch (Exception e) {
                 logger.warn("failed to construct index request", e);
-            }
-        }
-
-        private void processBulkIfNeeded() {
-            if (currentRequest.numberOfActions() >= bulkSize) {
-                // execute the bulk operation
-                int currentOnGoingBulks = onGoingBulks.incrementAndGet();
-                if (currentOnGoingBulks > dropThreshold) {
-                    // TODO, just wait here!, we can slow down the wikipedia parsing
-                    onGoingBulks.decrementAndGet();
-                    logger.warn("dropping bulk, [{}] crossed threshold [{}]", onGoingBulks, dropThreshold);
-                } else {
-                    try {
-                        currentRequest.execute(new ActionListener<BulkResponse>() {
-                            @Override
-                            public void onResponse(BulkResponse bulkResponse) {
-                                onGoingBulks.decrementAndGet();
-                            }
-
-                            @Override
-                            public void onFailure(Throwable e) {
-                                logger.warn("failed to execute bulk");
-                            }
-                        });
-                    } catch (Exception e) {
-                        logger.warn("failed to process bulk", e);
-                    }
-                }
-                currentRequest = client.prepareBulk();
             }
         }
     }

@@ -65,7 +65,8 @@ public class WikipediaRiverTest {
                 .startObject()
                     .field("type", "wikipedia")
                     .startObject("index")
-                        .field("bulk_size", 1)
+                        .field("bulk_size", 100)
+                        .field("flush_interval", "1s")
                     .endObject()
                 .endObject();
 
