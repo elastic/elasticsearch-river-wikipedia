@@ -87,6 +87,48 @@ You can modify those settings within index section:
 }
 ```
 
+Mapping
+-------
+
+By default, wikipedia river will generate the following mapping:
+
+```javascript
+{
+   "page": {
+      "properties": {
+         "category": {
+            "type": "string"
+         },
+         "disambiguation": {
+            "type": "boolean"
+         },
+         "link": {
+            "type": "string"
+         },
+         "redirect": {
+            "type": "boolean"
+         },
+         "redirect_page": {
+            "type": "string"
+         },
+         "special": {
+            "type": "boolean"
+         },
+         "stub": {
+            "type": "boolean"
+         },
+         "text": {
+            "type": "string"
+         },
+         "title": {
+            "type": "string"
+         }
+      }
+   }
+}
+```
+
+
 License
 -------
 

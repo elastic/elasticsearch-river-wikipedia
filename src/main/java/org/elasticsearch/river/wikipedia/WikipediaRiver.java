@@ -215,6 +215,7 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 builder.field("title", title);
                 builder.field("text", page.getText());
                 builder.field("redirect", page.isRedirect());
+                builder.field("redirect_page", page.getRedirectPage());
                 builder.field("special", page.isSpecialPage());
                 builder.field("stub", page.isStub());
                 builder.field("disambiguation", page.isDisambiguationPage());
