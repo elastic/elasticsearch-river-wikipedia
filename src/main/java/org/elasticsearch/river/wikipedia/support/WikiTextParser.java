@@ -42,7 +42,8 @@ public class WikiTextParser {
     private boolean disambiguation = false;
     private static Pattern stubPattern = Pattern.compile("\\-stub\\}\\}");
     // the first letter of pages is case-insensitive
-    private static Pattern disambCatPattern = Pattern.compile("\\{\\{[Dd]isambig\\}\\}");
+    private static Pattern disambCatPattern =
+            Pattern.compile("\\{\\{[Dd]isambig(uation)?\\}\\}");
     private InfoBox infoBox = null;
 
     public WikiTextParser(String wtext) {
