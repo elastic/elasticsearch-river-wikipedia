@@ -37,7 +37,7 @@ public class WikiTextParser {
     private boolean redirect = false;
     private String redirectString = null;
     private static Pattern redirectPattern =
-            Pattern.compile("#REDIRECT\\s+\\[\\[(.*?)\\]\\]");
+            Pattern.compile("#REDIRECT\\s+\\[\\[(.*?)\\]\\]", Pattern.CASE_INSENSITIVE);
     private boolean stub = false;
     private boolean disambiguation = false;
     private static Pattern stubPattern = Pattern.compile("\\-stub\\}\\}");
