@@ -41,7 +41,8 @@ public class WikiTextParser {
     private boolean stub = false;
     private boolean disambiguation = false;
     private static Pattern stubPattern = Pattern.compile("\\-stub\\}\\}");
-    private static Pattern disambCatPattern = Pattern.compile("\\{\\{disambig\\}\\}");
+    // the first letter of pages is case-insensitive
+    private static Pattern disambCatPattern = Pattern.compile("\\{\\{[Dd]isambig\\}\\}");
     private InfoBox infoBox = null;
 
     public WikiTextParser(String wtext) {
@@ -86,7 +87,7 @@ public class WikiTextParser {
 
     private void parseCategories() {
         pageCats = new ArrayList<String>();
-        Pattern catPattern = Pattern.compile("\\[\\[Category:(.*?)\\]\\]", Pattern.MULTILINE);
+        Pattern catPattern = Pattern.compile("\\[\\[[Cc]ategory:(.*?)\\]\\]", Pattern.MULTILINE);
         Matcher matcher = catPattern.matcher(wikiText);
         while (matcher.find()) {
             String[] temp = matcher.group(1).split("\\|");
