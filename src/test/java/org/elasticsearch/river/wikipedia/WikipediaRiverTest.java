@@ -66,7 +66,7 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
                     .field("type", "wikipedia")
                     .startObject("index")
                         .field("bulk_size", 100)
-                        .field("flush_interval", "1s")
+                        .field("flush_interval", "500ms")
                     .endObject()
                 .endObject();
 
