@@ -25,9 +25,9 @@ import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.indices.IndexMissingException;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.junit.annotations.Network;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,31 +35,31 @@ import java.io.IOException;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
- *
+ * This test requires internet connexion
+ * If you want to run this test, use -Dtests.network=true
  */
-public class WikipediaRiverTest {
+@Network
+public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
 
     protected ESLogger logger = ESLoggerFactory.getLogger(WikipediaRiverTest.class.getName());
 
-    @Test
-    public void testWikipediaRiver() throws IOException, InterruptedException {
-        // We can now create our node and our river
-        Settings settings = ImmutableSettings.settingsBuilder()
+    @Override
+    protected Settings nodeSettings(int nodeOrdinal) {
+        return ImmutableSettings.settingsBuilder()
                 .put("gateway.type", "none")
                 .put("index.number_of_shards", 1)
                 .put("index.number_of_replicas", 0)
                 .build();
-        Node node = NodeBuilder.nodeBuilder().local(true).settings(settings).node();
+    }
 
+    @Test
+    public void testWikipediaRiver() throws IOException, InterruptedException {
+        logger.info(" --> wipe indices");
         // We first remove existing index if any
-        try {
-            node.client().admin().indices().prepareDelete("wikipedia").execute().actionGet();
-        } catch (IndexMissingException e) {
-            // Index is missing? It's perfectly fine!
-        }
+        wipeIndices("wikipedia");
 
-        // Let's create an index for our docs and we will disable refresh
-        node.client().admin().indices().prepareCreate("wikipedia").execute().actionGet();
+        logger.info(" --> create wikipedia index");
+        createIndex("wikipedia");
 
         XContentBuilder river = jsonBuilder()
                 .startObject()
@@ -70,20 +70,19 @@ public class WikipediaRiverTest {
                     .endObject()
                 .endObject();
 
-        node.client().prepareIndex("_river", "wikipedia", "_meta").setSource(river).execute().actionGet();
+        logger.info(" --> create wikipedia river");
+        index("_river", "wikipedia", "_meta", river);
 
+        logger.info(" --> wait for 5s");
+        // We wait 5s for some documents to be indexed
         Thread.sleep(5000);
 
         // After some seconds, we should have some documents
-        CountResponse countResponse = node.client().prepareCount("wikipedia").execute().actionGet();
+        CountResponse countResponse = client().prepareCount("wikipedia").execute().actionGet();
+        logger.info(" --> we have indexed {} docs", countResponse.getCount());
 
         // It could happen that we don't have internet access when building wikipedia river
         // So we won't fail but only display a WARN message
-        if (countResponse.getCount() == 0) {
-            logger.warn("No page is indexed. If you don't have internet access, forget this message. " +
-                    "Otherwise you should fix the issue!");
-        }
+        assertThat("some pages should be indexed.", countResponse.getCount(), Matchers.greaterThan(0L));
     }
-
-
 }
