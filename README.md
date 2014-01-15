@@ -32,7 +32,7 @@ The default download is the latest [wikipedia dump](http://download.wikimedia.or
 {
     "type" : "wikipedia",
     "wikipedia" : {
-        "url" : "url to link to wikipedia dump"
+        "url" : "uri to bz2 file in the wikipedia dump, or on your local hd"
     }
 }
 ```
