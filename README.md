@@ -3,7 +3,7 @@ Wikipedia River Plugin for Elasticsearch
 
 The Wikipedia River plugin allows index wikipedia.
 
-In order to install the plugin, simply run: `bin/plugin -install elasticsearch/elasticsearch-river-wikipedia/2.0.0.RC1`.
+In order to install the plugin, simply run: `bin/plugin -install elasticsearch/elasticsearch-river-wikipedia/2.0.0`.
 
 Don't forget to restart the elasticsearch service - otherwise you will receive errors when trying to create index.
 
@@ -12,7 +12,7 @@ Don't forget to restart the elasticsearch service - otherwise you will receive e
 
 |   Wikipedia River Plugin   |    elasticsearch    | Release date |
 |----------------------------|---------------------|:------------:|
-| 2.0.0-SNAPSHOT             | 1.0.0.RC1 -> master |  XXXX-XX-XX  |
+| 2.0.0                      | 1.0.0.RC1 -> master |  2014-03-03  |
 | 2.0.0.RC1                  | 1.0.0.RC1 -> master |  2014-01-15  |
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
