@@ -20,19 +20,17 @@
 package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.base.Predicate;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.junit.annotations.Network;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 /**
  * This test requires internet connexion
@@ -40,49 +38,31 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
  */
 @Network
 public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
-
-    protected ESLogger logger = ESLoggerFactory.getLogger(WikipediaRiverTest.class.getName());
-
-    @Override
-    protected Settings nodeSettings(int nodeOrdinal) {
-        return ImmutableSettings.settingsBuilder()
-                .put("gateway.type", "none")
-                .put("index.number_of_shards", 1)
-                .put("index.number_of_replicas", 0)
-                .build();
-    }
-
     @Test
     public void testWikipediaRiver() throws IOException, InterruptedException {
-        logger.info(" --> wipe indices");
-        // We first remove existing index if any
-        wipeIndices("wikipedia");
-
-        logger.info(" --> create wikipedia index");
-        createIndex("wikipedia");
-
-        XContentBuilder river = jsonBuilder()
+        logger.info(" --> create wikipedia river");
+        index("_river", "wikipedia", "_meta", jsonBuilder()
                 .startObject()
                     .field("type", "wikipedia")
                     .startObject("index")
                         .field("bulk_size", 100)
-                        .field("flush_interval", "500ms")
+                        .field("flush_interval", "100ms")
                     .endObject()
-                .endObject();
+                .endObject());
 
-        logger.info(" --> create wikipedia river");
-        index("_river", "wikipedia", "_meta", river);
-
-        logger.info(" --> wait for 5s");
-        // We wait 5s for some documents to be indexed
-        Thread.sleep(5000);
-
-        // After some seconds, we should have some documents
-        CountResponse countResponse = client().prepareCount("wikipedia").execute().actionGet();
-        logger.info(" --> we have indexed {} docs", countResponse.getCount());
-
-        // It could happen that we don't have internet access when building wikipedia river
-        // So we won't fail but only display a WARN message
-        assertThat("some pages should be indexed.", countResponse.getCount(), Matchers.greaterThan(0L));
+        logger.info(" --> waiting for some documents");
+        // Check that docs are indexed by the river
+        assertThat(awaitBusy(new Predicate<Object>() {
+            public boolean apply(Object obj) {
+                try {
+                    refresh();
+                    CountResponse response = client().prepareCount("wikipedia").get();
+                    logger.info("  -> got {} docs in {} index", response.getCount());
+                    return response.getCount() > 0;
+                } catch (IndexMissingException e) {
+                    return false;
+                }
+            }
+        }, 1, TimeUnit.MINUTES), equalTo(true));
     }
 }

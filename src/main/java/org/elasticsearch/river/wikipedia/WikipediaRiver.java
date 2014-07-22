@@ -234,6 +234,12 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
 
                 builder.endObject();
 
+                if (closed) {
+                    logger.warn("river was closing while processing wikipedia page [{}]/[{}]. Operation skipped.",
+                            page.getID(), page.getTitle());
+                    return;
+                }
+
                 bulkProcessor.add(new IndexRequest(indexName, typeName, page.getID()).source(builder));
             } catch (Exception e) {
                 logger.warn("failed to construct index request", e);
