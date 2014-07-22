@@ -8,6 +8,7 @@ In order to install the plugin, simply run: `bin/plugin -install elasticsearch/e
 Don't forget to restart the elasticsearch service - otherwise you will receive errors when trying to create index.
 
 * For 2.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
+* For 1.4.x elasticsearch versions, look at [es-1.4 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.4).
 * For 1.3.x elasticsearch versions, look at [es-1.3 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.3).
 * For 1.2.x elasticsearch versions, look at [es-1.2 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.2).
 * For 1.0.x elasticsearch versions, look at [es-1.0 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.0).
@@ -15,11 +16,11 @@ Don't forget to restart the elasticsearch service - otherwise you will receive e
 
 |   Wikipedia River Plugin   |    elasticsearch    | Release date |
 |----------------------------|---------------------|:------------:|
-| 2.3.0-SNAPSHOT             | 1.3.0 -> 1.3        |  XXXX-XX-XX  |
+| 2.4.0-SNAPSHOT             | 1.4.0 -> 1.4        |  XXXX-XX-XX  |
 
 Please read documentation relative to the version you are using:
 
-* [2.3.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.3/README.md)
+* [2.4.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.4/README.md)
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
