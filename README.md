@@ -19,9 +19,9 @@ Don't forget to restart the elasticsearch service - otherwise you will receive e
 
 Please read documentation relative to the version you are using:
 
-* [2.0.1-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.0/README.md)
-* [2.0.0](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/v2.0.0/README.md)
-* [2.0.0.RC1](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/v2.0.0.RC1/README.md)
+* [2.0.1-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/es-1.0/README.md)
+* [2.0.0](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/v2.0.0/README.md)
+* [2.0.0.RC1](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/v2.0.0.RC1/README.md)
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
