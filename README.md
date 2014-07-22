@@ -7,14 +7,21 @@ In order to install the plugin, simply run: `bin/plugin -install elasticsearch/e
 
 Don't forget to restart the elasticsearch service - otherwise you will receive errors when trying to create index.
 
-* For 1.0.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
-* For 0.90.x elasticsearch versions, look at [1.x branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/1.x).
+* For 2.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
+* For 1.0.x elasticsearch versions, look at [es-1.0 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.0).
+* For 0.90.x elasticsearch versions, look at [es-0.90 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-0.90).
 
 |   Wikipedia River Plugin   |    elasticsearch    | Release date |
 |----------------------------|---------------------|:------------:|
-| 2.1.0-SNAPSHOT             | 1.0.0.RC1 -> master |  XXXX-XX-XX  |
+| 2.0.1-SNAPSHOT             | 1.0.0.RC1 -> master |  XXXX-XX-XX  |
 | 2.0.0                      | 1.0.0.RC1 -> master |  2014-03-03  |
 | 2.0.0.RC1                  | 1.0.0.RC1 -> master |  2014-01-15  |
+
+Please read documentation relative to the version you are using:
+
+* [2.0.1-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.0/README.md)
+* [2.0.0](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/v2.0.0/README.md)
+* [2.0.0.RC1](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/v2.0.0.RC1/README.md)
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
