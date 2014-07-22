@@ -21,7 +21,10 @@ package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.common.base.Predicate;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.indices.IndexMissingException;
+import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.junit.annotations.Network;
 import org.junit.Test;
@@ -36,8 +39,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
  * This test requires internet connexion
  * If you want to run this test, use -Dtests.network=true
  */
+@ElasticsearchIntegrationTest.ClusterScope(
+        scope = ElasticsearchIntegrationTest.Scope.SUITE, transportClientRatio = 0.0)
 @Network
 public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
+
+    @Override
+    protected Settings nodeSettings(int nodeOrdinal) {
+        return ImmutableSettings.builder()
+                .put(super.nodeSettings(nodeOrdinal))
+                .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
+                .build();
+    }
+
     @Test
     public void testWikipediaRiver() throws IOException, InterruptedException {
         logger.info(" --> create wikipedia river");
