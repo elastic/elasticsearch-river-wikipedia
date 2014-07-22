@@ -16,11 +16,11 @@ Don't forget to restart the elasticsearch service - otherwise you will receive e
 
 |   Wikipedia River Plugin   |    elasticsearch    | Release date |
 |----------------------------|---------------------|:------------:|
-| 2.4.0-SNAPSHOT             | 1.4.0 -> 1.4        |  XXXX-XX-XX  |
+| 3.0.0-SNAPSHOT             | 2.0.0 -> 2.0        |  XXXX-XX-XX  |
 
 Please read documentation relative to the version you are using:
 
-* [2.4.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.4/README.md)
+* [3.0.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/master/README.md)
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
