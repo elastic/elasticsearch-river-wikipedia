@@ -65,4 +65,39 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
             }
         }, 1, TimeUnit.MINUTES), equalTo(true));
     }
+
+    /**
+     * Testing another wikipedia source
+     * http://dumps.wikimedia.org/frwiki/latest/frwiki-latest-pages-articles.xml.bz2
+     */
+    @Test
+    public void testWikipediaRiverFrench() throws IOException, InterruptedException {
+        logger.info(" --> create wikipedia river");
+        index("_river", "wikipedia", "_meta", jsonBuilder()
+                .startObject()
+                    .field("type", "wikipedia")
+                    .startObject("wikipedia")
+                        .field("url", "http://dumps.wikimedia.org/frwiki/latest/frwiki-latest-pages-articles.xml.bz2")
+                    .endObject()
+                    .startObject("index")
+                        .field("bulk_size", 100)
+                        .field("flush_interval", "1s")
+                    .endObject()
+                .endObject());
+
+        logger.info(" --> waiting for some documents");
+        // Check that docs are indexed by the river
+        assertThat(awaitBusy(new Predicate<Object>() {
+            public boolean apply(Object obj) {
+                try {
+                    refresh();
+                    CountResponse response = client().prepareCount("wikipedia").get();
+                    logger.info("  -> got {} docs in {} index", response.getCount());
+                    return response.getCount() > 0;
+                } catch (IndexMissingException e) {
+                    return false;
+                }
+            }
+        }, 1, TimeUnit.MINUTES), equalTo(true));
+    }
 }
