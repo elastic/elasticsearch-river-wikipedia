@@ -7,8 +7,8 @@ In order to install the plugin, simply run: `bin/plugin -install elasticsearch/e
 
 Don't forget to restart the elasticsearch service - otherwise you will receive errors when trying to create index.
 
-* For 1.0.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
-* For 0.90.x elasticsearch versions, look at [1.x branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/1.x).
+* For 2.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
+* For 0.90.x elasticsearch versions, look at [es-0.90 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-0.90).
 
 |   Wikipedia River Plugin   |    elasticsearch    | Release date |
 |----------------------------|---------------------|:------------:|
