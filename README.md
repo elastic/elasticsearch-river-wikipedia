@@ -19,7 +19,7 @@ Don't forget to restart the elasticsearch service - otherwise you will receive e
 
 Please read documentation relative to the version you are using:
 
-* [2.3.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-couchdb/blob/es-1.3/README.md)
+* [2.3.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/es-1.3/README.md)
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 
