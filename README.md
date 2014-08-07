@@ -3,24 +3,33 @@ Wikipedia River Plugin for Elasticsearch
 
 The Wikipedia River plugin allows index wikipedia.
 
-In order to install the plugin, simply run: `bin/plugin -install elasticsearch/elasticsearch-river-wikipedia/2.0.0`.
+In order to install the plugin, run: 
 
-Don't forget to restart the elasticsearch service - otherwise you will receive errors when trying to create index.
+```sh
+bin/plugin -install elasticsearch/elasticsearch-river-wikipedia/2.2.0
+```
 
-* For 2.x elasticsearch versions, look at [master branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/master).
-* For 1.4.x elasticsearch versions, look at [es-1.4 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.4).
-* For 1.3.x elasticsearch versions, look at [es-1.3 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.3).
-* For 1.2.x elasticsearch versions, look at [es-1.2 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.2).
-* For 1.0.x elasticsearch versions, look at [es-1.0 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.0).
-* For 0.90.x elasticsearch versions, look at [es-0.90 branch](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-0.90).
+You need to install a version matching your Elasticsearch version:
 
-|   Wikipedia River Plugin   |    elasticsearch    | Release date |
-|----------------------------|---------------------|:------------:|
-| 3.0.0-SNAPSHOT             | 2.0.0 -> 2.0        |  XXXX-XX-XX  |
+|       Elasticsearch    | Azure Cloud Plugin|                                                             Docs                                                                   |
+|------------------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------|
+|    master              | Build from source | See below                                                                                                                          |
+|    es-1.x              | Build from source | [2.4.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.x/#version-240-snapshot-for-elasticsearch-1x)|
+|    es-1.3              | Build from source | [2.3.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/es-1.3/#version-230-snapshot-for-elasticsearch-13)|
+|    es-1.2              |     2.2.0         | [2.2.0](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/v2.2.0/#wikipedia-river-plugin-for-elasticsearch)      |
+|    es-1.0              |     2.0.0         | [2.0.0](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/v2.0.0/#wikipedia-river-plugin-for-elasticsearch)      |
+|    es-0.90             |     1.3.0         | [1.3.0](https://github.com/elasticsearch/elasticsearch-river-wikipedia/tree/v1.3.0/#wikipedia-river-plugin-for-elasticsearch)      |
 
-Please read documentation relative to the version you are using:
+To build a `SNAPSHOT` version, you need to build it with Maven:
 
-* [3.0.0-SNAPSHOT](https://github.com/elasticsearch/elasticsearch-river-wikipedia/blob/master/README.md)
+```bash
+mvn clean install
+plugin --install river-wikipedia \ 
+       --url file:target/releases/elasticsearch-river-wikipedia-X.X.X-SNAPSHOT.zip
+```
+
+Create river
+------------
 
 A simple river to index [Wikipedia](http://en.wikipedia.org) (English pages). Create it using:
 

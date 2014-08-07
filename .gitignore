@@ -9,4 +9,5 @@
 /.settings
 /.classpath
 .local-execution-hints.log
+/plugin_tools
 
