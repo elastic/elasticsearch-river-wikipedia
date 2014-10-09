@@ -68,18 +68,13 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
     public void deleteRiverAndWait() throws InterruptedException {
         logger.info(" --> remove all wikipedia rivers");
         client().admin().indices().prepareDelete("_river").get();
-
+        // We just wait a few to make sure that all bulks has been processed
         awaitBusy(new Predicate<Object>() {
             @Override
             public boolean apply(Object o) {
-                try {
-                    client().admin().indices().prepareGetIndex().addIndices("_river").get();
-                } catch (IndexMissingException e) {
-                    return true;
-                }
                 return false;
             }
-        }, 10, TimeUnit.SECONDS);
+        }, 2, TimeUnit.SECONDS);
     }
 
     @Test
