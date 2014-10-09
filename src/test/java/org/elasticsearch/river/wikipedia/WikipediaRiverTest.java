@@ -27,6 +27,7 @@ import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.plugins.PluginsService;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.junit.annotations.Network;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -50,6 +51,24 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
                 .put(super.nodeSettings(nodeOrdinal))
                 .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
                 .build();
+    }
+
+    @After
+    public void deleteRiverAndWait() throws InterruptedException {
+        logger.info(" --> remove all wikipedia rivers");
+        client().admin().indices().prepareDelete("_river").get();
+
+        awaitBusy(new Predicate<Object>() {
+            @Override
+            public boolean apply(Object o) {
+                try {
+                    client().admin().indices().prepareGetIndex().addIndices("_river").get();
+                } catch (IndexMissingException e) {
+                    return true;
+                }
+                return false;
+            }
+        }, 10, TimeUnit.SECONDS);
     }
 
     @Test
