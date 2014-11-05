@@ -43,6 +43,7 @@ import org.elasticsearch.river.wikipedia.support.WikiPage;
 import org.elasticsearch.river.wikipedia.support.WikiXMLParser;
 import org.elasticsearch.river.wikipedia.support.WikiXMLParserFactory;
 
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -219,18 +220,29 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 builder.field("special", page.isSpecialPage());
                 builder.field("stub", page.isStub());
                 builder.field("disambiguation", page.isDisambiguationPage());
-
+                //check to see if the lat/lon are assigned the imaginary values, if not, render the lat/lon
+                if(page.getLon() != 911 && page.getLat() != 8675309){
+                	builder = builder.startObject("coordinates");
+                    builder.field("lat", page.getLat());
+                    builder.field("lon", page.getLon());
+               
+                    builder = builder.endObject();
+                }
+                
                 builder.startArray("category");
                 for (String s : page.getCategories()) {
                     builder.value(s);
                 }
                 builder.endArray();
+                
+                
 
                 builder.startArray("link");
                 for (String s : page.getLinks()) {
                     builder.value(s);
                 }
                 builder.endArray();
+
 
                 builder.endObject();
 

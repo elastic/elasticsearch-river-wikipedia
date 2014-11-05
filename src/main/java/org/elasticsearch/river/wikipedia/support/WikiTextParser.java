@@ -51,6 +51,7 @@ public class WikiTextParser {
     private String wikiText = null;
     private ArrayList<String> pageCats = null;
     private ArrayList<String> pageLinks = null;
+    private float [] pageCoords = null;
     private boolean redirect = false;
     private String redirectString = null;
     private static Pattern redirectPattern =
@@ -61,6 +62,7 @@ public class WikiTextParser {
     // the first letter of pages is case-insensitive
     private static Pattern disambCatPattern =
             Pattern.compile("\\{\\{[Dd]isambig(uation)?\\}\\}");
+    
     private InfoBox infoBox = null;
 
     public WikiTextParser(String wtext) {
@@ -97,6 +99,11 @@ public class WikiTextParser {
         if (pageCats == null) parseCategories();
         return pageCats;
     }
+    
+    public float [] getCoords(){
+    	if(pageCoords == null) parseCoords();
+    	return pageCoords;
+    }
 
     public ArrayList<String> getLinks() {
         if (pageLinks == null) parseLinks();
@@ -112,6 +119,88 @@ public class WikiTextParser {
             pageCats.add(temp[0]);
         }
     }
+    
+    private void parseCoords() {
+        pageCoords = new float[2];
+    	Pattern coordPattern = Pattern.compile("\\{\\{Coord.*display=.*title.*\\}\\}", Pattern.CASE_INSENSITIVE);
+    	Pattern coordPattern2 = Pattern.compile("");
+        Matcher matcher = coordPattern.matcher(wikiText);
+        if (matcher.find()) {
+        	String[] temp = matcher.group(0).split("\\|");
+        	
+        	ArrayList<String> lat = new ArrayList<String>();
+        	ArrayList<String> lon = new ArrayList<String>();
+        	lat.add(temp[1]);
+        	int i = 2;
+        	//Starts at position 2 since the first 2 index positions are always numbers, reads until it encounters N or S
+        	while(!temp[i].equalsIgnoreCase("N") && !temp[i].equalsIgnoreCase("S") && i < temp.length-2){
+        		lat.add(temp[i]);
+        		i++;
+        	}
+        	//On N, positive number
+        	if(temp[i].equalsIgnoreCase("N")){
+        		lat.add("1");
+        		i++;
+        	}
+        	//On S, negative number
+        	else if(temp[i].equalsIgnoreCase("S")){
+        		lat.add("-1");
+        		i++;
+        	}
+        	//read second array until E or W
+        	while(!temp[i].equalsIgnoreCase("E") && !temp[i].equalsIgnoreCase("W") && i < temp.length-2){
+        		lon.add(temp[i]);
+        		i++;
+        	}
+        	//positive for E
+        	if(temp[i].equalsIgnoreCase("E")){
+        		lon.add("1");
+        		i++;
+             }
+        	//negative for W
+        	else if (temp[i].equalsIgnoreCase("W")){
+        		lon.add("-1");
+        		i++;
+        	}
+        	//if it's just two numbers in the array, lat/lon
+        	if(lat.size() == 2 && lon.isEmpty()) {
+                pageCoords[0]= Float.parseFloat(lat.get(0));
+                pageCoords[1]= Float.parseFloat(lat.get(1));
+        	}
+        	//conversion for decimal degrees
+        	else {
+        		float lat_coord = Float.parseFloat(lat.get(0));
+        		float lon_coord = Float.parseFloat(lon.get(0));
+        	
+        			for(int j = 1; j < lat.size()-1; j++){
+        				lat_coord = (float) (lat_coord + Float.parseFloat((lat.get(j)))/(Math.pow(60.0,j)));
+        			}
+        			
+        			for(int k = 1; k < lon.size()-1; k++) {
+        				lon_coord = (float) (lon_coord + Float.parseFloat((lon.get(k)))/(Math.pow(60.0,k)));
+        			}
+        			
+        	
+        	pageCoords[0] = (lat_coord * Float.parseFloat(lat.get(lat.size()-1)));
+        	pageCoords[1] = (lon_coord * Float.parseFloat(lon.get(lon.size()-1)));
+        	}
+        }
+        
+        //current placeholder if there are no geolocated coordinates, make them equal to these, they are ignored on the builder
+        
+        
+        
+        
+        else{
+        	pageCoords[0] = 8675309;
+        	pageCoords[1] = 911;
+        }
+    }
+    
+   
+    
+   
+    
 
     private void parseLinks() {
         pageLinks = new ArrayList<String>();
