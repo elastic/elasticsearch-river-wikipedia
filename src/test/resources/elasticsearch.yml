@@ -15,5 +15,3 @@
       logs: ${project.build.testOutputDirectory}/es/logs
       work: ${project.build.testOutputDirectory}/es/work
 
-  gateway.type: none
-
