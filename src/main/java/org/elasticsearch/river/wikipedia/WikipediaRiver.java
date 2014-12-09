@@ -64,7 +64,12 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
     private final String typeName;
 
     private final int bulkSize;
+    
+    //Arbitrary values not on map, used to determine if no coords exist.
+    private final long noLat = 8675309;
 
+    private final long noLon = 911;
+    
     private volatile Thread thread;
 
     private volatile boolean closed = false;
@@ -221,44 +226,34 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 builder.field("stub", page.isStub());
                 builder.field("disambiguation", page.isDisambiguationPage());
                 //check to see if the lat/lon are assigned the imaginary values, if not, render the lat/lon
-                if(page.getLon() != 911 && page.getLat() != 8675309){
+                if(page.getLon() != noLon && page.getLat() != noLat){
                 	builder = builder.startObject("coordinates");
                     builder.field("lat", page.getLat());
                     builder.field("lon", page.getLon());
-               
                     builder = builder.endObject();
                 }
-                
                 builder.startArray("category");
                 for (String s : page.getCategories()) {
                     builder.value(s);
                 }
                 builder.endArray();
-                
-                
-
                 builder.startArray("link");
                 for (String s : page.getLinks()) {
                     builder.value(s);
                 }
                 builder.endArray();
-
-
                 builder.endObject();
-
                 if (closed) {
                     logger.warn("river was closing while processing wikipedia page [{}]/[{}]. Operation skipped.",
                             page.getID(), page.getTitle());
                     return;
                 }
-
                 bulkProcessor.add(new IndexRequest(indexName, typeName, page.getID()).source(builder));
             } catch (Exception e) {
                 logger.warn("failed to construct index request", e);
             }
         }
     }
-
 
     private String stripTitle(String title) {
         sb.setLength(0);

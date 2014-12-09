@@ -134,19 +134,13 @@ public class WikiPage {
     }
     
     public float getLat(){
-    	 
-    	
     		float lat = wikiTextParser.getCoords()[0];
     		return lat;
     }
     
     public float getLon(){
-   	 
-    	
     		float lon = wikiTextParser.getCoords()[1];
     		return lon;
-    	
-		
     }
 
     /**
