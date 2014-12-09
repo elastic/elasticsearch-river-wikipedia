@@ -21,14 +21,19 @@ package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.common.base.Predicate;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.junit.annotations.Network;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static org.elasticsearch.cluster.metadata.IndexMetaData.SETTING_NUMBER_OF_REPLICAS;
+import static org.elasticsearch.cluster.metadata.IndexMetaData.SETTING_NUMBER_OF_SHARDS;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -36,8 +41,32 @@ import static org.hamcrest.CoreMatchers.equalTo;
  * This test requires internet connexion
  * If you want to run this test, use -Dtests.network=true
  */
+@ElasticsearchIntegrationTest.ClusterScope(
+        scope = ElasticsearchIntegrationTest.Scope.SUITE, transportClientRatio = 0.0)
 @Network
 public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
+
+    @Before
+    public void createEmptyRiverIndex() {
+        // We want to force _river index to use 1 shard 1 replica
+        client().admin().indices().prepareCreate("_river").setSettings(ImmutableSettings.builder()
+                .put(SETTING_NUMBER_OF_SHARDS, 1)
+                .put(SETTING_NUMBER_OF_REPLICAS, 0)).get();
+    }
+
+    @After
+    public void deleteRiverAndWait() throws InterruptedException {
+        logger.info(" --> remove all wikipedia rivers");
+        client().admin().indices().prepareDelete("_river").get();
+        // We just wait a few to make sure that all bulks has been processed
+        awaitBusy(new Predicate<Object>() {
+            @Override
+            public boolean apply(Object o) {
+                return false;
+            }
+        }, 2, TimeUnit.SECONDS);
+    }
+
     @Test
     public void testWikipediaRiver() throws IOException, InterruptedException {
         logger.info(" --> create wikipedia river");
