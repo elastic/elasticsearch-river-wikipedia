@@ -63,6 +63,8 @@ public class WikiTextParser {
 	private static Pattern disambCatPattern =
 			Pattern.compile("\\{\\{[Dd]isambig(uation)?\\}\\}");
 	//all of the coordinate pattern variables, there exists no real standardization as to how many coords you will be given.
+	private final static long noLat = 8675309;
+	private final static long noLon = 911;
 	private static Pattern coordPattern = Pattern.compile("(?<!\\!\\-\\- )\\{\\{Coord.*display=.*title.*\\}\\}", Pattern.CASE_INSENSITIVE);
 	private static Pattern coordPatternDegLat = Pattern.compile("(?<!_)lat_d(?!i).*|lat_deg.*");
 	private static Pattern coordPatternDegLon = Pattern.compile("(?<!_)lon_d(?!i).*|lon_deg.*|long_d(?!i).*|long_deg.*");
@@ -274,8 +276,8 @@ public class WikiTextParser {
 		}
 		//current placeholder if there are no geolocated coordinates, make them equal to these, they are ignored on the builder
 		else{
-			pageCoords[0] = 8675309;
-			pageCoords[1] = 911;
+			pageCoords[0] = noLat;
+			pageCoords[1] = noLon;
 		}
 	}
 
