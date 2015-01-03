@@ -128,6 +128,20 @@ public class WikiPage {
     public List<String> getCategories() {
         return wikiTextParser.getCategories();
     }
+    
+    public float[] getCoords() {
+    	return wikiTextParser.getCoords();
+    }
+    
+    public float getLat(){
+    	float lat = wikiTextParser.getCoords()[0];
+    	return lat;
+    }
+    
+    public float getLon(){
+    	float lon = wikiTextParser.getCoords()[1];
+    	return lon;
+    }
 
     /**
      * @return a list of links contained in the page
