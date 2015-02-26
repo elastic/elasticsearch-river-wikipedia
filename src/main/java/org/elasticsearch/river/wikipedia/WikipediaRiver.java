@@ -43,6 +43,7 @@ import org.elasticsearch.river.wikipedia.support.WikiPage;
 import org.elasticsearch.river.wikipedia.support.WikiXMLParser;
 import org.elasticsearch.river.wikipedia.support.WikiXMLParserFactory;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -71,6 +72,7 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
     private final TimeValue bulkFlushInterval;
     private volatile BulkProcessor bulkProcessor;
     private final int maxConcurrentBulk;
+    private Parser parser;
 
 
     @SuppressWarnings({"unchecked"})
@@ -103,6 +105,16 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
             this.maxConcurrentBulk = 1;
             this.bulkFlushInterval = TimeValue.timeValueSeconds(5);
         }
+
+        WikiXMLParser xmlParser = WikiXMLParserFactory.getSAXParser(this.url);
+        try {
+            xmlParser.setPageCallback(new PageCallback());
+        } catch (Exception e) {
+            logger.error("failed to create xmlParser", e);
+            return;
+        }
+        parser = new Parser(xmlParser);
+        thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "wikipedia_slurper").newThread(parser);
     }
 
     @Override
@@ -120,13 +132,6 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 logger.warn("failed to create index [{}], disabling river...", e, indexName);
                 return;
             }
-        }
-        WikiXMLParser parser = WikiXMLParserFactory.getSAXParser(url);
-        try {
-            parser.setPageCallback(new PageCallback());
-        } catch (Exception e) {
-            logger.error("failed to create parser", e);
-            return;
         }
 
         // Creating bulk processor
@@ -162,7 +167,7 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                 .setFlushInterval(bulkFlushInterval)
                 .build();
 
-        thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "wikipedia_slurper").newThread(new Parser(parser));
+        // Start wikipedia slurper
         thread.start();
     }
 
@@ -172,6 +177,9 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
         closed = true;
         if (thread != null) {
             thread.interrupt();
+        }
+        if (parser != null) {
+            parser.close();
         }
 
         if (this.bulkProcessor != null) {
@@ -195,6 +203,16 @@ public class WikipediaRiver extends AbstractRiverComponent implements River {
                     return;
                 }
                 logger.error("failed to parse stream", e);
+            }
+        }
+
+        public void close() {
+            if (parser != null) {
+                try {
+                    parser.close();
+                } catch (IOException e) {
+                    logger.error("failed to close parser", e);
+                }
             }
         }
     }
