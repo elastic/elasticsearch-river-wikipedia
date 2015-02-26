@@ -23,6 +23,7 @@ import org.elasticsearch.river.wikipedia.bzip2.CBZip2InputStream;
 import org.xml.sax.InputSource;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -36,6 +37,7 @@ public abstract class WikiXMLParser {
 
     private URL wikiXMLFile = null;
     protected WikiPage currentPage = null;
+    private BufferedReader br;
 
     public WikiXMLParser(URL fileName) {
         wikiXMLFile = fileName;
@@ -69,15 +71,14 @@ public abstract class WikiXMLParser {
      * @throws Exception
      */
     protected InputSource getInputSource() throws Exception {
-        BufferedReader br = null;
-
         if (wikiXMLFile.toExternalForm().endsWith(".gz")) {
             br = new BufferedReader(new InputStreamReader(new GZIPInputStream(wikiXMLFile.openStream()), "UTF-8"));
         } else if (wikiXMLFile.toExternalForm().endsWith(".bz2")) {
             InputStream fis = wikiXMLFile.openStream();
             byte[] ignoreBytes = new byte[2];
             fis.read(ignoreBytes); //"B", "Z" bytes from commandline tools
-            br = new BufferedReader(new InputStreamReader(new CBZip2InputStream(fis), "UTF-8"));
+            CBZip2InputStream cbZip2InputStream = new CBZip2InputStream(fis);
+            br = new BufferedReader(new InputStreamReader(cbZip2InputStream, "UTF-8"));
         } else {
             br = new BufferedReader(new InputStreamReader(wikiXMLFile.openStream(), "UTF-8"));
         }
@@ -87,6 +88,11 @@ public abstract class WikiXMLParser {
 
     protected void notifyPage(WikiPage page) {
         currentPage = page;
+    }
 
+    public void close() throws IOException {
+        if (br != null) {
+            br.close();
+        }
     }
 }
