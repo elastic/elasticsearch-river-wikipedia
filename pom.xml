@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
     <name>Elasticsearch Wikipedia River plugin</name>
     <description>The Wikipedia River plugin allows index wikipedia</description>
-    <url>https://github.com/elasticsearch/elasticsearch-river-wikipedia/</url>
+    <url>https://github.com/elastic/elasticsearch-river-wikipedia/</url>
     <inceptionYear>2009</inceptionYear>
     <licenses>
         <license>
@@ -19,10 +19,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:git@github.com:elasticsearch/elasticsearch-river-wikipedia.git</connection>
-        <developerConnection>scm:git:git@github.com:elasticsearch/elasticsearch-river-wikipedia.git
-        </developerConnection>
-        <url>http://github.com/elasticsearch/elasticsearch-river-wikipedia</url>
+        <connection>scm:git:git@github.com:elastic/elasticsearch-river-wikipedia.git</connection>
+        <developerConnection>scm:git:git@github.com:elastic/elasticsearch-river-wikipedia.git</developerConnection>
+        <url>http://github.com/elastic/elasticsearch-river-wikipedia</url>
     </scm>
 
     <parent>
