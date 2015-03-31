@@ -3,7 +3,7 @@ Wikipedia River Plugin for Elasticsearch
 
 The Wikipedia River plugin allows index wikipedia.
 
-## Version 2.5.0 for Elasticsearch: 1.5
+## Version 2.5.1-SNAPSHOT for Elasticsearch: 1.5
 
 If you are looking for another version documentation, please refer to the 
 [compatibility matrix](https://github.com/elasticsearch/elasticsearch-river-wikipedia/#wikipedia-river-plugin-for-elasticsearch).
