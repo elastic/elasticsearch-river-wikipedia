@@ -3,6 +3,9 @@ Wikipedia River Plugin for Elasticsearch
 
 The Wikipedia River plugin allows index wikipedia.
 
+**Rivers are [deprecated](https://www.elastic.co/blog/deprecating_rivers) and will be removed in the future.**
+Have a look at [stream2es](https://github.com/elastic/stream2es#wikipedia).
+
 In order to install the plugin, run: 
 
 ```sh
