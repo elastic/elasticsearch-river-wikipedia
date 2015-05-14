@@ -33,7 +33,8 @@
 
     <properties>
         <!-- You can add any specific project property here -->
-        <tests.security.manager>true</tests.security.manager>
+        <!-- no unit tests -->
+        <tests.ifNoTests>warn</tests.ifNoTests>
     </properties>
 
     <dependencies>
