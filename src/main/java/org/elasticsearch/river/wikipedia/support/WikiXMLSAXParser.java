@@ -41,8 +41,7 @@ public class WikiXMLSAXParser extends WikiXMLParser {
             xmlReader = XMLReaderFactory.createXMLReader();
             pageHandler = new IteratorHandler(this);
         } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
