@@ -21,7 +21,6 @@ package org.elasticsearch.river.wikipedia;
 
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.common.base.Predicate;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.plugins.PluginsService;
@@ -52,7 +51,7 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
 
     @Override
     protected Settings nodeSettings(int nodeOrdinal) {
-        return ImmutableSettings.builder()
+        return Settings.builder()
                 .put(super.nodeSettings(nodeOrdinal))
                 .put("plugins." + PluginsService.LOAD_PLUGIN_FROM_CLASSPATH, true)
                 .build();
@@ -61,7 +60,7 @@ public class WikipediaRiverTest extends ElasticsearchIntegrationTest {
     @Before
     public void createEmptyRiverIndex() {
         // We want to force _river index to use 1 shard 1 replica
-        client().admin().indices().prepareCreate("_river").setSettings(ImmutableSettings.builder()
+        client().admin().indices().prepareCreate("_river").setSettings(Settings.builder()
                 .put(SETTING_NUMBER_OF_SHARDS, 1)
                 .put(SETTING_NUMBER_OF_REPLICAS, 0)).get();
     }
