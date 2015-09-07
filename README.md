@@ -1,3 +1,7 @@
+**Important**: This project has been stopped since elasticsearch 2.0.
+
+----
+
 Wikipedia River Plugin for Elasticsearch
 ==================================
 
